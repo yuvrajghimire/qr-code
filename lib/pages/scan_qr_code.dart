@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
 import 'package:qr_code_scanner/qr_code_scanner.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class QrScan extends StatefulWidget {
   const QrScan({Key? key}) : super(key: key);
@@ -15,6 +16,9 @@ class _QrScanState extends State<QrScan> {
   Barcode? result;
   QRViewController? controller;
   final GlobalKey qrKey = GlobalKey(debugLabel: 'QR');
+
+  bool _validURL = false;
+
   @override
   void reassemble() async {
     super.reassemble();
@@ -43,9 +47,9 @@ class _QrScanState extends State<QrScan> {
     return Scaffold(
       body: Column(
         children: <Widget>[
-          Expanded(flex: 4, child: _buildQrView(context)),
+          Expanded(flex: 6, child: _buildQrView(context)),
           Expanded(
-            flex: 1,
+            flex: 2,
             child: Column(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: <Widget>[
@@ -53,13 +57,37 @@ class _QrScanState extends State<QrScan> {
                   Column(
                     children: [
                       const SizedBox(height: 10),
-                      Text(
-                        '${result!.code}',
-                        style:
-                            const TextStyle(color: Colors.white, fontSize: 16),
+                      Container(
+                        child: _validURL == true
+                            ? TextButton(
+                                style: ButtonStyle(
+                                    backgroundColor: MaterialStateProperty.all(
+                                        const Color(0XFF476499))),
+                                onPressed: () async {
+                                  var url = result!.code!;
+                                  try {
+                                    await launch(url);
+                                  } catch (e) {
+                                    // ignore: avoid_print
+                                    print(e);
+                                  }
+                                },
+                                child: Text(
+                                  'Go to : ${result!.code!.length > 50 ? result!.code!.substring(0, 50) + '...' : result!.code!}',
+                                  style: const TextStyle(
+                                      color: Colors.white, fontSize: 16),
+                                ),
+                              )
+                            : Text(
+                                '${result!.code!.length > 50 ? result!.code!.substring(0, 50) + '...' : result!.code!.length}',
+                                style: const TextStyle(
+                                    color: Colors.white, fontSize: 16),
+                              ),
                       ),
                       const SizedBox(height: 8),
                       TextButton(
+                          style: const ButtonStyle(
+                              splashFactory: NoSplash.splashFactory),
                           onPressed: () {
                             Clipboard.setData(
                                 ClipboardData(text: "${result!.code}"));
@@ -92,7 +120,7 @@ class _QrScanState extends State<QrScan> {
                   )
                 else
                   const Text('Scan a code',
-                      style: TextStyle(color: Colors.white, fontSize: 20)),
+                      style: TextStyle(color: Colors.white, fontSize: 22)),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceAround,
                   crossAxisAlignment: CrossAxisAlignment.center,
@@ -190,15 +218,27 @@ class _QrScanState extends State<QrScan> {
     controller.scannedDataStream.listen((scanData) {
       setState(() {
         result = scanData;
+        hasValidUrl('${result!.code}') ? _validURL = true : _validURL = false;
       });
     });
+  }
+
+  bool hasValidUrl(String value) {
+    String pattern =
+        r'(http|https)://[\w-]+(\.[\w-]+)+([\w.,@?^=%&amp;:/~+#-]*[\w@?^=%&amp;/~+#-])?';
+    RegExp regExp = RegExp(pattern);
+    if (regExp.hasMatch(value)) {
+      return true;
+    } else {
+      return false;
+    }
   }
 
   void _onPermissionSet(BuildContext context, QRViewController ctrl, bool p) {
     log('${DateTime.now().toIso8601String()}_onPermissionSet $p');
     if (!p) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('No Permission given!')),
+        const SnackBar(content: Text('Permission not given!')),
       );
     }
   }

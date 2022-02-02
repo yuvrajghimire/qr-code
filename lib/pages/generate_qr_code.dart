@@ -22,9 +22,12 @@ class _QrCreateState extends State<QrCreate> {
               backgroundColor: Colors.white,
               size: 200,
             ),
-            const SizedBox(height: 80),
+            const SizedBox(height: 40),
+            const Text('Convert text to QR Code : ',
+                style: TextStyle(color: Colors.white, fontSize: 18)),
+            const SizedBox(height: 40),
             Container(
-              padding: const EdgeInsets.all(10),
+              padding: const EdgeInsets.all(5),
               decoration: BoxDecoration(
                   boxShadow: [
                     BoxShadow(
@@ -42,10 +45,7 @@ class _QrCreateState extends State<QrCreate> {
                 child: TextField(
                   cursorColor: Colors.white,
                   cursorHeight: 25,
-                  style: const TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 20),
+                  style: const TextStyle(color: Colors.white, fontSize: 20),
                   controller: textController,
                   decoration: const InputDecoration(
                       border: InputBorder.none,
