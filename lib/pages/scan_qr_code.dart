@@ -79,7 +79,9 @@ class _QrScanState extends State<QrScan> {
                                 ),
                               )
                             : Text(
-                                '${result!.code!.length > 50 ? result!.code!.substring(0, 50) + '...' : result!.code!.length}',
+                                result!.code!.length > 50
+                                    ? result!.code!.substring(0, 50) + '...'
+                                    : result!.code!,
                                 style: const TextStyle(
                                     color: Colors.white, fontSize: 16),
                               ),
